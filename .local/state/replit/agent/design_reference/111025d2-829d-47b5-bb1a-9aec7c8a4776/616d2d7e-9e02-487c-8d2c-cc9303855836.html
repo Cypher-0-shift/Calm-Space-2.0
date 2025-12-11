@@ -1,0 +1,606 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calm Space - Mental Wellness App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    backdropBlur: {
+                        xs: '2px',
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-soft': 'pulse-soft 2s ease-in-out infinite',
+                        'slide-up': 'slide-up 0.5s ease-out',
+                        'breathe': 'breathe 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        'pulse-soft': {
+                            '0%, 100%': { opacity: '0.8' },
+                            '50%': { opacity: '1' },
+                        },
+                        'slide-up': {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        breathe: {
+                            '0%, 100%': { transform: 'scale(1)' },
+                            '50%': { transform: 'scale(1.1)' },
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .mood-happy {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 50%, #F59E0B 100%);
+        }
+        .mood-sad {
+            background: linear-gradient(135deg, #DBEAFE 0%, #93C5FD 50%, #3B82F6 100%);
+        }
+        .mood-anxious {
+            background: linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 50%, #8B5CF6 100%);
+        }
+        .mood-angry {
+            background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 50%, #EF4444 100%);
+        }
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(139, 92, 246, 0.3);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+        }
+        .chat-bubble {
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .mood-selector:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body class="font-inter bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 min-h-screen" data-mock="true">
+    <!-- @COMPONENT: ParticlesBackground -->
+    <div class="particles">
+        <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 40%; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 50%; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 60%; animation-delay: 5s;"></div>
+        <div class="particle" style="left: 70%; animation-delay: 6s;"></div>
+        <div class="particle" style="left: 80%; animation-delay: 7s;"></div>
+        <div class="particle" style="left: 90%; animation-delay: 8s;"></div>
+    </div>
+    <!-- @END_COMPONENT: ParticlesBackground -->
+
+    <!-- @COMPONENT: AppWrapper -->
+    <div class="min-h-screen flex flex-col">
+        <!-- @COMPONENT: TopNavigation [desktop only] -->
+        <nav class="hidden md:flex fixed top-0 left-0 right-0 z-50 justify-center items-center glass px-6 py-3 space-x-6">
+            <a href="#home" class="nav-link text-purple-900 bg-purple-200 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 hover:bg-purple-300" data-mock="true">
+                🏠 Home
+            </a>
+            <a href="#music" class="nav-link text-gray-800 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 hover:bg-white/60" data-mock="true">
+                🎵 Music
+            </a>
+            <a href="#journal" class="nav-link text-gray-800 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 hover:bg-white/60" data-mock="true">
+                📓 Journal
+            </a>
+            <a href="#aichat" class="nav-link text-gray-800 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 hover:bg-white/60" data-mock="true">
+                💬 AI Chat
+            </a>
+            <a href="#panic" class="nav-link text-gray-800 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 hover:bg-white/60" data-mock="true">
+                🌬️ Panic
+            </a>
+            <a href="#games" class="nav-link text-gray-800 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 hover:bg-white/60" data-mock="true">
+                🎮 Games
+            </a>
+            <a href="#creativity" class="nav-link text-gray-800 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 hover:bg-white/60" data-mock="true">
+                🎨 Creativity
+            </a>
+            <a href="#inspiration" class="nav-link text-gray-800 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 hover:bg-white/60" data-mock="true">
+                🌈 Inspiration
+            </a>
+            <a href="#relaxation" class="nav-link text-gray-800 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 hover:bg-white/60" data-mock="true">
+                🧘‍♀️ Relaxation
+            </a>
+            <a href="#settings" class="nav-link text-gray-800 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 hover:bg-white/60" data-mock="true">
+                ⚙️ Settings
+            </a>
+        </nav>
+        <!-- @END_COMPONENT: TopNavigation -->
+
+        <!-- @COMPONENT: MobileBottomNavigation [mobile only] -->
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 glass-dark flex justify-around py-2 px-4 border-t border-gray-200/20">
+            <a href="#home" class="nav-link text-purple-300 flex flex-col items-center text-xs" data-mock="true">
+                <span class="text-lg">🏠</span>
+                <span class="mt-0.5">Home</span>
+            </a>
+            <a href="#music" class="nav-link text-gray-400 flex flex-col items-center text-xs" data-mock="true">
+                <span class="text-lg">🎵</span>
+                <span class="mt-0.5">Music</span>
+            </a>
+            <a href="#journal" class="nav-link text-gray-400 flex flex-col items-center text-xs" data-mock="true">
+                <span class="text-lg">📓</span>
+                <span class="mt-0.5">Journal</span>
+            </a>
+            <a href="#aichat" class="nav-link text-gray-400 flex flex-col items-center text-xs" data-mock="true">
+                <span class="text-lg">💬</span>
+                <span class="mt-0.5">AI Chat</span>
+            </a>
+            <a href="#panic" class="nav-link text-gray-400 flex flex-col items-center text-xs" data-mock="true">
+                <span class="text-lg">🌬️</span>
+                <span class="mt-0.5">Panic</span>
+            </a>
+        </nav>
+        <!-- @END_COMPONENT: MobileBottomNavigation -->
+
+        <!-- @COMPONENT: MainContent -->
+        <main class="relative z-[1] flex-grow pt-20 pb-20 px-4 sm:px-8 w-full max-w-7xl mx-auto">
+            
+            <!-- @COMPONENT: HeroSection -->
+            <section id="home" class="mb-16 text-center animate-slide-up">
+                <div class="glass rounded-3xl p-8 mb-8">
+                    <h1 class="text-4xl md:text-6xl font-bold text-gray-800 mb-4" data-mock="true">
+                        Welcome to <span class="text-purple-600">Calm Space</span>
+                    </h1>
+                    <p class="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto" data-mock="true">
+                        Your personal sanctuary for mental wellness, mood tracking, and emotional support
+                    </p>
+                    
+                    <!-- @COMPONENT: MoodSelector -->
+                    <div class="mb-8">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-6" data-mock="true">How are you feeling today?</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                            <!-- @FUNCTIONALITY: Each mood selector should update app theme and trigger personalized recommendations -->
+                            <div class="mood-selector glass rounded-2xl p-6 cursor-pointer transition-all duration-300 mood-happy" data-event="click:selectMood" data-implementation="Should update global mood state and trigger theme change">
+                                <div class="text-4xl mb-2">😊</div>
+                                <div class="font-semibold text-yellow-800" data-mock="true">Happy</div>
+                            </div>
+                            <div class="mood-selector glass rounded-2xl p-6 cursor-pointer transition-all duration-300 mood-sad">
+                                <div class="text-4xl mb-2">😢</div>
+                                <div class="font-semibold text-blue-800" data-mock="true">Sad</div>
+                            </div>
+                            <div class="mood-selector glass rounded-2xl p-6 cursor-pointer transition-all duration-300 mood-anxious">
+                                <div class="text-4xl mb-2">😰</div>
+                                <div class="font-semibold text-purple-800" data-mock="true">Anxious</div>
+                            </div>
+                            <div class="mood-selector glass rounded-2xl p-6 cursor-pointer transition-all duration-300 mood-angry">
+                                <div class="text-4xl mb-2">😠</div>
+                                <div class="font-semibold text-red-800" data-mock="true">Angry</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: MoodSelector -->
+                    
+                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105" data-mock="true">
+                        Get Personalized Recommendations
+                    </button>
+                </div>
+            </section>
+            <!-- @END_COMPONENT: HeroSection -->
+
+            <!-- @COMPONENT: FeaturesGrid -->
+            <section class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+                
+                <!-- @COMPONENT: MusicFeature -->
+                <div id="music" class="glass rounded-2xl p-6 hover:scale-105 transition-all duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="text-3xl mr-3">🎵</div>
+                        <h3 class="text-xl font-semibold text-gray-800" data-mock="true">Music Therapy</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4" data-mock="true">Curated playlists tailored to your mood with YouTube integration</p>
+                    <!-- Mock YouTube Player -->
+                    <div class="bg-black rounded-lg aspect-video mb-4 flex items-center justify-center" data-mock-image="true" data-implementation="YouTube iframe player goes here">
+                        <i class="fas fa-play text-white text-2xl"></i>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="flex-1 bg-purple-100 hover:bg-purple-200 text-purple-700 py-2 px-4 rounded-lg text-sm font-medium transition-colors" data-mock="true">
+                            <i class="fas fa-heart mr-1"></i> Favorites
+                        </button>
+                        <button class="flex-1 bg-purple-100 hover:bg-purple-200 text-purple-700 py-2 px-4 rounded-lg text-sm font-medium transition-colors" data-mock="true">
+                            <i class="fas fa-list mr-1"></i> Playlists
+                        </button>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: MusicFeature -->
+
+                <!-- @COMPONENT: AIChattFeature -->
+                <div id="aichat" class="glass rounded-2xl p-6 hover:scale-105 transition-all duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="text-3xl mr-3">💬</div>
+                        <h3 class="text-xl font-semibold text-gray-800" data-mock="true">AI Support Chat</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4" data-mock="true">24/7 emotional support powered by AI</p>
+                    <!-- Mock Chat Interface -->
+                    <div class="space-y-3 mb-4 h-32 overflow-hidden">
+                        <div class="chat-bubble bg-gray-100 rounded-lg p-3 text-sm" data-mock="true">
+                            Hi! I'm here to listen and support you. How are you feeling today?
+                        </div>
+                        <div class="chat-bubble bg-purple-100 rounded-lg p-3 text-sm ml-auto" data-mock="true">
+                            I've been feeling anxious lately
+                        </div>
+                        <div class="chat-bubble bg-gray-100 rounded-lg p-3 text-sm" data-mock="true">
+                            I understand. Let's explore some breathing techniques...
+                        </div>
+                    </div>
+                    <button class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg font-medium transition-colors" data-mock="true">
+                        Start Conversation
+                    </button>
+                </div>
+                <!-- @END_COMPONENT: AIChattFeature -->
+
+                <!-- @COMPONENT: JournalFeature -->
+                <div id="journal" class="glass rounded-2xl p-6 hover:scale-105 transition-all duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="text-3xl mr-3">📓</div>
+                        <h3 class="text-xl font-semibold text-gray-800" data-mock="true">Mood Journal</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4" data-mock="true">Track your emotional journey with guided prompts</p>
+                    <!-- Mock Journal Entry -->
+                    <div class="bg-white/50 rounded-lg p-4 mb-4">
+                        <div class="text-sm text-gray-500 mb-2" data-mock="true">Today's Prompt:</div>
+                        <div class="text-sm font-medium text-gray-700 mb-3" data-mock="true">"What made you smile today?"</div>
+                        <div class="text-sm text-gray-600 italic" data-mock="true">I had a great conversation with my friend...</div>
+                    </div>
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors" data-mock="true">
+                        Write Entry
+                    </button>
+                </div>
+                <!-- @END_COMPONENT: JournalFeature -->
+
+                <!-- @COMPONENT: PanicFeature -->
+                <div id="panic" class="glass rounded-2xl p-6 hover:scale-105 transition-all duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="text-3xl mr-3">🌬️</div>
+                        <h3 class="text-xl font-semibold text-gray-800" data-mock="true">Panic Relief</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4" data-mock="true">Immediate breathing exercises and grounding techniques</p>
+                    <!-- Mock Breathing Animation -->
+                    <div class="flex justify-center mb-4">
+                        <div class="w-24 h-24 bg-gradient-to-br from-blue-200 to-purple-200 rounded-full flex items-center justify-center animate-breathe">
+                            <div class="text-2xl">🫁</div>
+                        </div>
+                    </div>
+                    <button class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg font-medium transition-colors" data-event="click:startPanicMode" data-implementation="Should start breathing exercise immediately">
+                        Quick Relief
+                    </button>
+                </div>
+                <!-- @END_COMPONENT: PanicFeature -->
+
+                <!-- @COMPONENT: GamesFeature -->
+                <div id="games" class="glass rounded-2xl p-6 hover:scale-105 transition-all duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="text-3xl mr-3">🎮</div>
+                        <h3 class="text-xl font-semibold text-gray-800" data-mock="true">Mindful Games</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4" data-mock="true">Memory games and puzzles to help focus your mind</p>
+                    <!-- Mock Game Grid -->
+                    <div class="grid grid-cols-4 gap-2 mb-4">
+                        <div class="aspect-square bg-purple-200 rounded-lg flex items-center justify-center text-purple-600">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div class="aspect-square bg-gray-200 rounded-lg"></div>
+                        <div class="aspect-square bg-blue-200 rounded-lg flex items-center justify-center text-blue-600">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="aspect-square bg-gray-200 rounded-lg"></div>
+                    </div>
+                    <button class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium transition-colors" data-mock="true">
+                        Play Memory Match
+                    </button>
+                </div>
+                <!-- @END_COMPONENT: GamesFeature -->
+
+                <!-- @COMPONENT: CreativityFeature -->
+                <div id="creativity" class="glass rounded-2xl p-6 hover:scale-105 transition-all duration-300">
+                    <div class="flex items-center mb-4">
+                        <div class="text-3xl mr-3">🎨</div>
+                        <h3 class="text-xl font-semibold text-gray-800" data-mock="true">Creative Tools</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4" data-mock="true">Express yourself with drawing tools and creative prompts</p>
+                    <!-- Mock Drawing Canvas -->
+                    <div class="bg-white rounded-lg h-24 mb-4 flex items-center justify-center border-2 border-dashed border-gray-300" data-mock-image="true" data-implementation="Canvas for drawing tool goes here">
+                        <div class="text-gray-400 text-sm" data-mock="true">Drawing Canvas</div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="flex-1 bg-orange-100 hover:bg-orange-200 text-orange-700 py-2 px-3 rounded-lg text-sm font-medium transition-colors" data-mock="true">
+                            Draw
+                        </button>
+                        <button class="flex-1 bg-orange-100 hover:bg-orange-200 text-orange-700 py-2 px-3 rounded-lg text-sm font-medium transition-colors" data-mock="true">
+                            Prompts
+                        </button>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: CreativityFeature -->
+                
+            </section>
+            <!-- @END_COMPONENT: FeaturesGrid -->
+
+            <!-- @COMPONENT: InspirationSection -->
+            <section id="inspiration" class="mb-16">
+                <div class="glass rounded-3xl p-8">
+                    <div class="flex items-center mb-6">
+                        <div class="text-4xl mr-4">🌈</div>
+                        <h2 class="text-3xl font-bold text-gray-800" data-mock="true">Daily Inspiration</h2>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <!-- Inspirational Quote -->
+                            <div class="bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-6">
+                                <blockquote class="text-lg font-medium text-gray-700 mb-3" data-mock="true">
+                                    "The greatest revolution of our generation is the discovery that human beings, by changing the inner attitudes of their minds, can change the outer aspects of their lives."
+                                </blockquote>
+                                <cite class="text-sm text-purple-600" data-mock="true">— William James</cite>
+                            </div>
+                            
+                            <!-- Success Story -->
+                            <div class="bg-gradient-to-r from-green-100 to-blue-100 rounded-xl p-6">
+                                <h4 class="font-semibold text-gray-800 mb-2" data-mock="true">Today's Success Story</h4>
+                                <p class="text-sm text-gray-600" data-mock="true">
+                                    "After using Calm Space for 30 days, I learned to recognize my anxiety triggers and developed healthy coping mechanisms..."
+                                </p>
+                                <button class="mt-3 text-blue-600 hover:text-blue-700 text-sm font-medium" data-mock="true">Read More →</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Calming Image -->
+                        <!-- A serene mountain landscape with morning mist and soft golden light -->
+                        <div class="rounded-xl overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" alt="Serene mountain landscape with morning mist" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- @END_COMPONENT: InspirationSection -->
+
+            <!-- @COMPONENT: RelaxationSection -->
+            <section id="relaxation" class="mb-16">
+                <div class="glass rounded-3xl p-8">
+                    <div class="flex items-center mb-6">
+                        <div class="text-4xl mr-4">🧘‍♀️</div>
+                        <h2 class="text-3xl font-bold text-gray-800" data-mock="true">Relaxation Center</h2>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <!-- Meditation -->
+                        <div class="bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl p-6 text-center">
+                            <div class="text-3xl mb-3">🧘</div>
+                            <h4 class="font-semibold text-gray-800 mb-2" data-mock="true">Guided Meditation</h4>
+                            <p class="text-sm text-gray-600 mb-4" data-mock="true">5-minute mindfulness session</p>
+                            <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors" data-mock="true">
+                                Start Session
+                            </button>
+                        </div>
+                        
+                        <!-- Nature Sounds -->
+                        <div class="bg-gradient-to-br from-green-100 to-teal-100 rounded-xl p-6 text-center">
+                            <div class="text-3xl mb-3">🌊</div>
+                            <h4 class="font-semibold text-gray-800 mb-2" data-mock="true">Nature Sounds</h4>
+                            <p class="text-sm text-gray-600 mb-4" data-mock="true">Ocean waves, rain, forest</p>
+                            <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors" data-mock="true">
+                                Play Sounds
+                            </button>
+                        </div>
+                        
+                        <!-- Sleep Stories -->
+                        <div class="bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl p-6 text-center">
+                            <div class="text-3xl mb-3">🌙</div>
+                            <h4 class="font-semibold text-gray-800 mb-2" data-mock="true">Sleep Stories</h4>
+                            <p class="text-sm text-gray-600 mb-4" data-mock="true">Calming bedtime narratives</p>
+                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors" data-mock="true">
+                                Listen Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- @END_COMPONENT: RelaxationSection -->
+
+            <!-- @COMPONENT: SettingsSection -->
+            <section id="settings" class="mb-16">
+                <div class="glass rounded-3xl p-8">
+                    <div class="flex items-center mb-6">
+                        <div class="text-4xl mr-4">⚙️</div>
+                        <h2 class="text-3xl font-bold text-gray-800" data-mock="true">Settings & Privacy</h2>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- Privacy Controls -->
+                        <div class="space-y-4">
+                            <h3 class="text-xl font-semibold text-gray-700" data-mock="true">Privacy & Data</h3>
+                            
+                            <div class="bg-white/50 rounded-xl p-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="font-medium text-gray-800" data-mock="true">AI Memory</div>
+                                        <div class="text-sm text-gray-600" data-mock="true">Remember conversation context</div>
+                                    </div>
+                                    <div class="relative">
+                                        <input type="checkbox" id="ai-memory" class="sr-only" data-mock="true">
+                                        <label for="ai-memory" class="block w-12 h-6 bg-purple-600 rounded-full cursor-pointer">
+                                            <div class="w-5 h-5 bg-white rounded-full transform translate-x-6 transition-transform"></div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white/50 rounded-xl p-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="font-medium text-gray-800" data-mock="true">Local Storage Only</div>
+                                        <div class="text-sm text-gray-600" data-mock="true">Keep all data on device</div>
+                                    </div>
+                                    <div class="relative">
+                                        <input type="checkbox" id="local-storage" class="sr-only" checked data-mock="true">
+                                        <label for="local-storage" class="block w-12 h-6 bg-green-600 rounded-full cursor-pointer">
+                                            <div class="w-5 h-5 bg-white rounded-full transform translate-x-6 transition-transform"></div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button class="w-full bg-red-100 hover:bg-red-200 text-red-700 py-3 px-4 rounded-xl font-medium transition-colors" data-event="click:clearAllData" data-implementation="Should clear localStorage after confirmation">
+                                Clear All Data
+                            </button>
+                        </div>
+                        
+                        <!-- Appearance & Accessibility -->
+                        <div class="space-y-4">
+                            <h3 class="text-xl font-semibold text-gray-700" data-mock="true">Appearance</h3>
+                            
+                            <div class="bg-white/50 rounded-xl p-4">
+                                <div class="font-medium text-gray-800 mb-3" data-mock="true">Theme</div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button class="bg-purple-200 border-2 border-purple-400 text-purple-800 py-2 px-3 rounded-lg text-sm font-medium" data-mock="true">
+                                        Light
+                                    </button>
+                                    <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium transition-colors" data-mock="true">
+                                        Dark
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white/50 rounded-xl p-4">
+                                <div class="font-medium text-gray-800 mb-3" data-mock="true">Notifications</div>
+                                <div class="space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="rounded border-gray-300 text-purple-600 mr-3" checked data-mock="true">
+                                        <span class="text-sm text-gray-700" data-mock="true">Daily mood check-in</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" class="rounded border-gray-300 text-purple-600 mr-3" data-mock="true">
+                                        <span class="text-sm text-gray-700" data-mock="true">Relaxation reminders</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- @END_COMPONENT: SettingsSection -->
+
+        </main>
+        <!-- @END_COMPONENT: MainContent -->
+
+        <!-- @COMPONENT: AppToast [floating notification] -->
+        <div id="app-toast" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white px-6 py-3 rounded-full shadow-lg z-50 opacity-0 transition-opacity duration-300" data-mock="true">
+            Mood updated successfully! 🎉
+        </div>
+        <!-- @END_COMPONENT: AppToast -->
+
+        <!-- @COMPONENT: DevResetButton [development only] -->
+        <button class="fixed bottom-4 right-4 z-[999] bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium transition-colors" data-event="click:resetApp" data-implementation="Should clear localStorage and redirect to onboarding">
+            🔄 Reset App
+        </button>
+        <!-- @END_COMPONENT: DevResetButton -->
+    </div>
+    <!-- @END_COMPONENT: AppWrapper -->
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        
+        // Mock interactions for demonstration
+        (function() {
+            // Mood selector interaction
+            document.querySelectorAll('.mood-selector').forEach(selector => {
+                selector.addEventListener('click', function() {
+                    // Remove active state from all selectors
+                    document.querySelectorAll('.mood-selector').forEach(s => s.classList.remove('ring-4', 'ring-purple-300'));
+                    // Add active state to clicked selector
+                    this.classList.add('ring-4', 'ring-purple-300');
+                    
+                    // Show toast notification
+                    const toast = document.getElementById('app-toast');
+                    toast.style.opacity = '1';
+                    setTimeout(() => {
+                        toast.style.opacity = '0';
+                    }, 2500);
+                });
+            });
+
+            // Navigation highlighting
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // Remove active state from all nav links
+                    document.querySelectorAll('.nav-link').forEach(l => {
+                        l.classList.remove('bg-purple-200', 'text-purple-900', 'text-purple-300');
+                        l.classList.add('text-gray-800', 'text-gray-400');
+                    });
+                    // Add active state to clicked link
+                    this.classList.remove('text-gray-800', 'text-gray-400');
+                    if (window.innerWidth >= 768) {
+                        this.classList.add('bg-purple-200', 'text-purple-900');
+                    } else {
+                        this.classList.add('text-purple-300');
+                    }
+                });
+            });
+
+            // Breathing animation for panic relief
+            const breathingCircle = document.querySelector('.animate-breathe');
+            if (breathingCircle) {
+                breathingCircle.addEventListener('click', function() {
+                    this.style.animationDuration = '4s';
+                    // Could trigger guided breathing exercise here
+                });
+            }
+
+            // Settings toggle switches
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const label = this.nextElementSibling;
+                    const toggle = label.querySelector('div');
+                    if (this.checked) {
+                        label.classList.remove('bg-gray-300');
+                        label.classList.add('bg-purple-600');
+                        toggle.classList.add('translate-x-6');
+                    } else {
+                        label.classList.remove('bg-purple-600');
+                        label.classList.add('bg-gray-300');
+                        toggle.classList.remove('translate-x-6');
+                    }
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

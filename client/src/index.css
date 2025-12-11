@@ -1,0 +1,211 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(210, 25%, 7.8431%);
+  --card: hsl(180, 6.6667%, 97.0588%);
+  --card-foreground: hsl(210, 25%, 7.8431%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(210, 25%, 7.8431%);
+  --primary: hsl(262, 83%, 58%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(210, 25%, 7.8431%);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --muted: hsl(240, 1.9608%, 90%);
+  --muted-foreground: hsl(210, 25%, 7.8431%);
+  --accent: hsl(262, 83%, 95%);
+  --accent-foreground: hsl(262, 83%, 58%);
+  --destructive: hsl(356.3033, 90.5579%, 54.3137%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(201.4286, 30.4348%, 90.9804%);
+  --input: hsl(200, 23.0769%, 97.4510%);
+  --ring: hsl(262, 83%, 58%);
+  --font-inter: Inter, sans-serif;
+  --radius: 1.3rem;
+
+  /* Mood Theme Colors */
+  --mood-happy-start: hsl(45, 93%, 87%);
+  --mood-happy-middle: hsl(44, 92%, 85%);
+  --mood-happy-end: hsl(37, 91%, 55%);
+  --mood-happy-text: hsl(37, 77%, 26%);
+
+  --mood-sad-start: hsl(214, 87%, 92%);
+  --mood-sad-middle: hsl(213, 89%, 77%);
+  --mood-sad-end: hsl(213, 94%, 68%);
+  --mood-sad-text: hsl(213, 94%, 30%);
+
+  --mood-anxious-start: hsl(249, 100%, 94%);
+  --mood-anxious-middle: hsl(248, 95%, 85%);
+  --mood-anxious-end: hsl(262, 83%, 58%);
+  --mood-anxious-text: hsl(262, 83%, 25%);
+
+  --mood-angry-start: hsl(0, 93%, 94%);
+  --mood-angry-middle: hsl(0, 93%, 86%);
+  --mood-angry-end: hsl(0, 84%, 60%);
+  --mood-angry-text: hsl(0, 84%, 25%);
+
+  --mood-default-start: hsl(262, 100%, 95%);
+  --mood-default-middle: hsl(326, 100%, 97%);
+  --mood-default-end: hsl(213, 100%, 95%);
+  --mood-default-text: hsl(210, 25%, 30%);
+}
+
+.dark {
+  --background: hsl(0, 0%, 0%);
+  --foreground: hsl(200, 6.6667%, 91.1765%);
+  --card: hsl(228, 9.8039%, 10%);
+  --card-foreground: hsl(0, 0%, 85.0980%);
+  --popover: hsl(0, 0%, 0%);
+  --popover-foreground: hsl(200, 6.6667%, 91.1765%);
+  --primary: hsl(262, 83%, 58%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(195, 15.3846%, 94.9020%);
+  --secondary-foreground: hsl(210, 25%, 7.8431%);
+  --muted: hsl(0, 0%, 9.4118%);
+  --muted-foreground: hsl(210, 3.3898%, 46.2745%);
+  --accent: hsl(262, 70%, 15%);
+  --accent-foreground: hsl(262, 83%, 58%);
+  --destructive: hsl(356.3033, 90.5579%, 54.3137%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(210, 5.2632%, 14.9020%);
+  --input: hsl(207.6923, 27.6596%, 18.4314%);
+  --ring: hsl(262, 83%, 58%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: var(--font-inter);
+  }
+}
+
+@layer components {
+  .glass {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .glass-dark {
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .mood-happy {
+    background: linear-gradient(135deg, var(--mood-happy-start) 0%, var(--mood-happy-middle) 50%, var(--mood-happy-end) 100%);
+    color: var(--mood-happy-text);
+  }
+
+  .mood-sad {
+    background: linear-gradient(135deg, var(--mood-sad-start) 0%, var(--mood-sad-middle) 50%, var(--mood-sad-end) 100%);
+    color: var(--mood-sad-text);
+  }
+
+  .mood-anxious {
+    background: linear-gradient(135deg, var(--mood-anxious-start) 0%, var(--mood-anxious-middle) 50%, var(--mood-anxious-end) 100%);
+    color: var(--mood-anxious-text);
+  }
+
+  .mood-angry {
+    background: linear-gradient(135deg, var(--mood-angry-start) 0%, var(--mood-angry-middle) 50%, var(--mood-angry-end) 100%);
+    color: var(--mood-angry-text);
+  }
+
+  .mood-default {
+    background: linear-gradient(135deg, var(--mood-default-start) 0%, var(--mood-default-middle) 50%, var(--mood-default-end) 100%);
+    color: var(--mood-default-text);
+  }
+
+  .particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(139, 92, 246, 0.3);
+    border-radius: 50%;
+    animation: float 8s ease-in-out infinite;
+  }
+
+  .chat-bubble {
+    max-width: 80%;
+    word-wrap: break-word;
+  }
+
+  .mood-selector:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-soft {
+    animation: pulse-soft 2s ease-in-out infinite;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.5s ease-out;
+  }
+
+  .animate-breathe {
+    animation: breathe 4s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes pulse-soft {
+    0%, 100% {
+      opacity: 0.8;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-up {
+    0% {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes breathe {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+  }
+}
