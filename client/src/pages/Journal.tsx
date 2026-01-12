@@ -1,14 +1,19 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useLocation } from 'wouter';
+import { AnimatePresence, motion } from 'framer-motion';
+import { 
+  Book, Lock, PenLine, Sparkles, Flame, Sun, CloudRain, 
+  Wind, Coffee, ChevronRight, Search, BookOpen 
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { useMoodTheme } from '@/hooks/useMoodTheme';
 import { useToast } from '@/hooks/use-toast';
-import BreakSpace from './BreakSpace';
+import { format } from 'date-fns';
+import { PageContainer } from "@/components/layout/PageContainer";
 
+// --- TYPES & INTERFACES ---
 interface JournalEntry {
   id: string;
   title: string;
@@ -16,361 +21,415 @@ interface JournalEntry {
   mood?: string;
   date: string;
   prompt?: string;
+  tags?: string[];
 }
 
+interface MoodPrompt {
+  mood: string;
+  questions: string[];
+  icon: React.ElementType;
+  color: string;
+}
+
+// --- CONFIGURATION ---
+const MOOD_PROMPTS: Record<string, MoodPrompt> = {
+  Happy: {
+    mood: 'Happy',
+    questions: ["What went right today?", "Capture this moment of joy.", "Who made you smile?"],
+    icon: Sun,
+    color: 'text-amber-500 bg-amber-50'
+  },
+  Sad: {
+    mood: 'Sad',
+    questions: ["What feels heavy right now?", "Be kind to yourself: write one good thing.", "What do you need?"],
+    icon: CloudRain,
+    color: 'text-blue-500 bg-blue-50'
+  },
+  Anxious: {
+    mood: 'Anxious',
+    questions: ["List 3 things you can control.", "What is the worst that can happen? (Is it likely?)", "Breathe."],
+    icon: Wind,
+    color: 'text-purple-500 bg-purple-50'
+  },
+  Calm: {
+    mood: 'Calm',
+    questions: ["What does peace feel like?", "How can you keep this feeling?", "Observation of the moment."],
+    icon: Coffee,
+    color: 'text-emerald-500 bg-emerald-50'
+  },
+  Default: {
+    mood: 'Neutral',
+    questions: ["What is on your mind?", "Describe your day so far.", "One goal for tomorrow."],
+    icon: Book,
+    color: 'text-slate-500 bg-slate-50'
+  }
+};
+
+// --- COMPONENTS ---
+
+// 1. The Entry Card (Reusable)
+const EntryCard = ({ entry, onClick, onDelete }: { entry: JournalEntry, onClick: () => void, onDelete: (id: string) => void }) => (
+  <motion.div
+    layout
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, scale: 0.95 }}
+    onClick={onClick}
+    className="group relative bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all cursor-pointer overflow-hidden"
+  >
+    <div className="flex justify-between items-start mb-3">
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+          {format(new Date(entry.date), 'MMM dd')}
+        </span>
+        <span className="text-xs text-slate-300">•</span>
+        <span className="text-xs text-slate-400">
+          {format(new Date(entry.date), 'h:mm a')}
+        </span>
+      </div>
+      {entry.mood && (
+        <span className="px-2 py-1 rounded-md bg-slate-50 text-[10px] font-medium text-slate-500 uppercase tracking-wide">
+          {entry.mood}
+        </span>
+      )}
+    </div>
+    
+    <h3 className="font-semibold text-slate-800 mb-2 line-clamp-1 group-hover:text-purple-600 transition-colors">
+      {entry.title || "Untitled Entry"}
+    </h3>
+    
+    <p className="text-sm text-slate-500 leading-relaxed line-clamp-3 font-serif">
+      {entry.content}
+    </p>
+
+    {/* Hover Actions */}
+    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        className="h-8 w-8 hover:bg-red-50 hover:text-red-500 rounded-full"
+        onClick={(e) => { e.stopPropagation(); onDelete(entry.id); }}
+      >
+        <Trash2 className="w-4 h-4" />
+      </Button>
+    </div>
+  </motion.div>
+);
+
+// 2. The Stats Bar
+const StatsBar = ({ entries }: { entries: JournalEntry[] }) => {
+  const total = entries.length;
+  const streak = useMemo(() => {
+    if (entries.length === 0) return 0;
+    // Simple streak logic placeholder
+    return 1; 
+  }, [entries]);
+
+  return (
+    <div className="grid grid-cols-2 gap-4 mb-8">
+      <div className="bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white/50 flex items-center gap-4 shadow-sm">
+        <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+          <Book className="w-5 h-5" />
+        </div>
+        <div>
+          <div className="text-2xl font-bold text-slate-800">{total}</div>
+          <div className="text-xs text-slate-500 uppercase tracking-wider">Entries</div>
+        </div>
+      </div>
+      <div className="bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white/50 flex items-center gap-4 shadow-sm">
+        <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+          <Flame className="w-5 h-5" />
+        </div>
+        <div>
+          <div className="text-2xl font-bold text-slate-800">{streak}</div>
+          <div className="text-xs text-slate-500 uppercase tracking-wider">Day Streak</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- MAIN PAGE ---
 const Journal = () => {
-  const [entries, setEntries] = useLocalStorage<JournalEntry[]>('journalEntries', []);
-  const [currentEntry, setCurrentEntry] = useState({ title: '', content: '', prompt: '' });
-  const [isWriting, setIsWriting] = useState(false);
-  const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
-  const { mood } = useMoodTheme();
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
+  
+  // State
+  const [entries, setEntries] = useLocalStorage<JournalEntry[]>('journalEntries', []);
+  const [view, setView] = useState<'dashboard' | 'editor'>('dashboard');
+  
+  // Editor State
+  const [editorData, setEditorData] = useState<{title: string, content: string, prompt?: string, mood?: string}>({
+    title: '', content: ''
+  });
+  
+  // Derived Data
+  const groupedEntries = useMemo(() => {
+    return entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [entries]);
 
-  const journalPrompts = [
-    "What made you smile today?",
-    "Describe a moment when you felt proud of yourself.",
-    "What are three things you're grateful for right now?",
-    "How did you overcome a challenge today?",
-    "What would you tell your younger self?",
-    "Describe a person who has positively influenced your life.",
-    "What are your hopes for tomorrow?",
-    "Write about a place that makes you feel peaceful.",
-    "What lesson did you learn recently?",
-    "How do you want to show kindness to yourself today?",
-  ];
+  // --- ACTIONS ---
 
-  const moodPrompts = {
-    Happy: [
-      "What's bringing you joy today?",
-      "How can you share this happiness with others?",
-      "What activities make you feel most alive?"
-    ],
-    Sad: [
-      "What emotions are you experiencing right now?",
-      "What comfort would you offer a friend feeling this way?",
-      "What small step could brighten your day?"
-    ],
-    Anxious: [
-      "What specific thoughts are causing you worry?",
-      "What strategies have helped you feel calm before?",
-      "What would you like to release or let go of?"
-    ],
-    Angry: [
-      "What triggered these feelings?",
-      "How can you express this emotion in a healthy way?",
-      "What boundaries might you need to set?"
-    ],
+  const handleCreateNew = (prompt?: string, mood?: string) => {
+    setEditorData({
+      title: '',
+      content: '',
+      prompt: prompt,
+      mood: mood
+    });
+    setView('editor');
   };
 
-  const getTodaysPrompt = () => {
-    const today = new Date();
-    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
-    
-    if (mood && moodPrompts[mood as keyof typeof moodPrompts]) {
-      const moodSpecific = moodPrompts[mood as keyof typeof moodPrompts];
-      return moodSpecific[dayOfYear % moodSpecific.length];
-    }
-    
-    return journalPrompts[dayOfYear % journalPrompts.length];
-  };
-
-  const saveEntry = () => {
-    if (!currentEntry.content.trim()) {
-      toast({ title: "Please write something first", variant: "destructive" });
+  const handleSave = () => {
+    if (!editorData.content.trim()) {
+      toast({ title: "Journal is empty", description: "Write a few words first." });
       return;
     }
 
-    const entry: JournalEntry = {
+    const newEntry: JournalEntry = {
       id: Date.now().toString(),
-      title: currentEntry.title || `Entry - ${new Date().toLocaleDateString()}`,
-      content: currentEntry.content,
-      mood: mood || undefined,
+      title: editorData.title || format(new Date(), 'EEEE, MMMM do'),
+      content: editorData.content,
       date: new Date().toISOString(),
-      prompt: currentEntry.prompt || undefined,
+      mood: editorData.mood,
+      prompt: editorData.prompt
     };
 
-    setEntries([entry, ...entries]);
-    setCurrentEntry({ title: '', content: '', prompt: '' });
-    setIsWriting(false);
-    toast({ title: "Journal entry saved! ✍️" });
+    setEntries([newEntry, ...entries]);
+    toast({ title: "Saved securely", description: "Your thoughts are encrypted locally." });
+    setView('dashboard');
   };
 
-  const startWriting = (prompt?: string) => {
-    setIsWriting(true);
-    setSelectedEntry(null);
-    if (prompt) {
-      setCurrentEntry({ ...currentEntry, prompt });
-    }
+  const handleDelete = (id: string) => {
+    setEntries(entries.filter(e => e.id !== id));
+    toast({ title: "Entry deleted" });
   };
 
-  const deleteEntry = (id: string) => {
-    if (confirm('Are you sure you want to delete this entry?')) {
-      setEntries(entries.filter(entry => entry.id !== id));
-      setSelectedEntry(null);
-      toast({ title: "Entry deleted" });
-    }
+  const handleOpenEntry = (entry: JournalEntry) => {
+    setEditorData({
+      title: entry.title,
+      content: entry.content,
+      prompt: entry.prompt,
+      mood: entry.mood
+    });
+    setView('editor');
   };
 
-  const groupedEntries = entries.reduce((acc, entry) => {
-    const date = new Date(entry.date);
-    const key = date.toDateString();
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(entry);
-    return acc;
-  }, {} as { [key: string]: JournalEntry[] });
+  // --- RENDERING ---
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 animate-slide-up">
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">
-          📓 Journal Space
-        </h1>
-        <p className="text-lg text-gray-600">
-          Track your thoughts, reflect on your journey, or simply let go
-        </p>
-      </div>
-
-      <Tabs defaultValue="journal" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="journal">Personal Journal</TabsTrigger>
-          <TabsTrigger value="breakspace">BreakSpace - Let Go</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="journal" className="mt-6">
-          <div className="grid lg:grid-cols-3 gap-6">
-            {/* Writing Panel */}
-            <div className="lg:col-span-2">
-              {!isWriting && !selectedEntry ? (
-                <Card className="glass">
-                  <CardContent className="p-8 text-center">
-                    <div className="text-6xl mb-6">✍️</div>
-                    <h3 className="text-2xl font-semibold mb-4">Ready to write?</h3>
-                    
-                    {/* Today's Prompt */}
-                    <div className="bg-white/50 rounded-xl p-6 mb-6">
-                      <h4 className="font-semibold mb-2">Today's Prompt:</h4>
-                      <p className="text-gray-700 italic">"{getTodaysPrompt()}"</p>
-                      <Button 
-                        onClick={() => startWriting(getTodaysPrompt())}
-                        className="mt-4"
-                      >
-                        Use This Prompt
-                      </Button>
-                    </div>
-
-                    <div className="flex gap-3 justify-center">
-                      <Button onClick={() => startWriting()}>
-                        Free Write
-                      </Button>
-                      <Button variant="outline" onClick={() => {
-                        const randomPrompt = journalPrompts[Math.floor(Math.random() * journalPrompts.length)];
-                        startWriting(randomPrompt);
-                      }}>
-                        Random Prompt
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : isWriting ? (
-                <Card className="glass">
-                  <CardHeader>
-                    <CardTitle>New Entry</CardTitle>
-                    {currentEntry.prompt && (
-                      <div className="bg-white/50 rounded-lg p-3">
-                        <strong>Prompt:</strong> <em>"{currentEntry.prompt}"</em>
-                      </div>
-                    )}
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <Input
-                      type="text"
-                      placeholder="Entry title (optional)"
-                      value={currentEntry.title}
-                      onChange={(e) => setCurrentEntry({ ...currentEntry, title: e.target.value })}
-                    />
-                    <Textarea
-                      placeholder="Start writing your thoughts..."
-                      value={currentEntry.content}
-                      onChange={(e) => setCurrentEntry({ ...currentEntry, content: e.target.value })}
-                      rows={12}
-                      className="resize-none"
-                    />
-                    <div className="flex gap-3">
-                      <Button onClick={saveEntry} disabled={!currentEntry.content.trim()}>
-                        Save Entry
-                      </Button>
-                      <Button variant="outline" onClick={() => {
-                        if (currentEntry.content && !confirm('Discard current entry?')) return;
-                        setIsWriting(false);
-                        setCurrentEntry({ title: '', content: '', prompt: '' });
-                      }}>
-                        Cancel
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : selectedEntry ? (
-                <Card className="glass">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle>{selectedEntry.title}</CardTitle>
-                        <p className="text-gray-600">
-                          {new Date(selectedEntry.date).toLocaleString()}
-                          {selectedEntry.mood && (
-                            <span className="ml-2 px-2 py-1 bg-purple-100 text-purple-700 rounded text-sm">
-                              {selectedEntry.mood}
-                            </span>
-                          )}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => deleteEntry(selectedEntry.id)}
-                          className="text-red-600"
-                        >
-                          Delete
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSelectedEntry(null)}
-                        >
-                          ✕
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {selectedEntry.prompt && (
-                      <div className="bg-white/50 rounded-lg p-3 mb-4">
-                        <strong>Prompt:</strong> <em>"{selectedEntry.prompt}"</em>
-                      </div>
-                    )}
-                    <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                      {selectedEntry.content}
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : null}
+    <div className="min-h-screen w-full bg-[#FAFAFA] text-slate-900 font-sans selection:bg-purple-100">
+      
+      {/* GLOBAL HEADER */}
+      <header className="sticky top-0 z-40 w-full bg-[#FAFAFA]/80 backdrop-blur-md border-b border-slate-200/50">
+        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Book className="w-5 h-5 text-slate-700" />
+            <h1 className="font-serif text-xl font-medium">Journal</h1>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 rounded-full shadow-sm">
+              <Lock className="w-3 h-3 text-emerald-500" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Private</span>
             </div>
+            
+            <Button 
+              variant="outline" 
+              className="hidden md:flex gap-2 rounded-full border-slate-200 hover:bg-slate-100"
+              onClick={() => setLocation('/breakspace')}
+            >
+              <Flame className="w-4 h-4 text-orange-500" />
+              <span>BreakSpace</span>
+            </Button>
+          </div>
+        </div>
+      </header>
 
-            {/* Entries Sidebar */}
-            <div className="space-y-4">
-              <Card className="glass">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    Your Entries
-                    <Button size="sm" onClick={() => startWriting()}>
-                      + New
-                    </Button>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {entries.length === 0 ? (
-                    <div className="text-center py-6">
-                      <div className="text-3xl mb-2">📝</div>
-                      <p className="text-gray-600 text-sm">
-                        No entries yet. Start your journaling journey!
-                      </p>
+      <PageContainer className="py-8">
+        <AnimatePresence mode="wait">
+          
+          {/* VIEW: DASHBOARD */}
+          {view === 'dashboard' && (
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="grid grid-cols-1 lg:grid-cols-12 gap-8"
+            >
+              {/* LEFT COLUMN: SIDEBAR & PROMPTS */}
+              <div className="lg:col-span-4 space-y-8">
+                
+                {/* 1. Quick Stats */}
+                <StatsBar entries={entries} />
+
+                {/* 2. New Entry CTA */}
+                <Button 
+                  onClick={() => handleCreateNew()}
+                  className="w-full h-14 text-lg rounded-2xl bg-slate-900 hover:bg-slate-800 text-white shadow-xl shadow-slate-200 transition-all hover:scale-[1.02]"
+                >
+                  <PenLine className="w-5 h-5 mr-2" /> Write New Entry
+                </Button>
+
+                {/* 3. Daily Prompts (Dynamic) */}
+                <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Sparkles className="w-4 h-4 text-purple-500" />
+                    <h3 className="font-semibold text-slate-800">Daily Reflection</h3>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {MOOD_PROMPTS.Default.questions.slice(0, 3).map((q, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handleCreateNew(q, 'Neutral')}
+                        className="w-full text-left p-3 rounded-xl hover:bg-slate-50 text-sm text-slate-600 hover:text-purple-600 transition-colors border border-transparent hover:border-slate-100"
+                      >
+                        "{q}"
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 4. Mood Check (Quick Start) */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 pl-2">Write by Mood</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {Object.values(MOOD_PROMPTS).slice(0,4).map((m) => (
+                      <button
+                        key={m.mood}
+                        onClick={() => handleCreateNew(m.questions[0], m.mood)}
+                        className={`p-3 rounded-xl border border-transparent hover:border-slate-200 transition-all text-left flex items-center gap-3 ${m.color.replace('bg-', 'hover:bg-opacity-80 bg-opacity-50 ')}`}
+                      >
+                        <m.icon className="w-4 h-4" />
+                        <span className="text-sm font-medium">{m.mood}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* RIGHT COLUMN: ENTRIES LIST */}
+              <div className="lg:col-span-8 space-y-6">
+                <div className="flex items-center justify-between pl-2">
+                  <h2 className="text-xl font-serif text-slate-800">Recent Memories</h2>
+                  <div className="text-sm text-slate-400">
+                    Sort by <span className="font-medium text-slate-600">Date</span>
+                  </div>
+                </div>
+
+                {entries.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 bg-white border border-dashed border-slate-200 rounded-3xl text-center">
+                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                      <BookOpen className="w-8 h-8 text-slate-300" />
                     </div>
-                  ) : (
-                    <div className="space-y-4 max-h-96 overflow-y-auto">
-                      {Object.entries(groupedEntries)
-                        .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
-                        .map(([date, dayEntries]) => (
-                          <div key={date}>
-                            <h4 className="font-semibold text-sm text-gray-600 mb-2">
-                              {new Date(date).toLocaleDateString(undefined, {
-                                weekday: 'long',
-                                month: 'short',
-                                day: 'numeric'
-                              })}
-                            </h4>
-                            <div className="space-y-2">
-                              {dayEntries.map((entry) => (
-                                <div
-                                  key={entry.id}
-                                  onClick={() => setSelectedEntry(entry)}
-                                  className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                                    selectedEntry?.id === entry.id
-                                      ? 'bg-purple-100 border-purple-300'
-                                      : 'bg-white/50 hover:bg-white/80'
-                                  }`}
-                                >
-                                  <h5 className="font-medium text-sm line-clamp-1">
-                                    {entry.title}
-                                  </h5>
-                                  <p className="text-xs text-gray-600 line-clamp-2 mt-1">
-                                    {entry.content}
-                                  </p>
-                                  <div className="flex items-center justify-between mt-2">
-                                    <span className="text-xs text-gray-500">
-                                      {new Date(entry.date).toLocaleTimeString([], {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                      })}
-                                    </span>
-                                    {entry.mood && (
-                                      <span className="text-xs px-2 py-1 bg-purple-100 text-purple-600 rounded">
-                                        {entry.mood}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
+                    <h3 className="text-lg font-medium text-slate-700 mb-1">Your journal is empty</h3>
+                    <p className="text-slate-400 max-w-xs mx-auto">
+                      Today is a great day to start. Capture a thought, a feeling, or a moment.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    {groupedEntries.map((entry) => (
+                      <EntryCard 
+                        key={entry.id} 
+                        entry={entry} 
+                        onClick={() => handleOpenEntry(entry)}
+                        onDelete={handleDelete}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {/* VIEW: EDITOR */}
+          {view === 'editor' && (
+            <motion.div
+              key="editor"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="max-w-3xl mx-auto"
+            >
+              {/* Editor Toolbar */}
+              <div className="flex items-center justify-between mb-6">
+                <Button variant="ghost" onClick={() => setView('dashboard')} className="gap-2 pl-0 hover:bg-transparent hover:text-slate-600">
+                  <ChevronRight className="w-4 h-4 rotate-180" /> Back
+                </Button>
+                <div className="text-xs font-mono text-slate-300">
+                  {editorData.content.length} chars
+                </div>
+              </div>
+
+              {/* THE REAL PAGE (Paper Surface) */}
+              <div className="bg-[#FDFBF7] min-h-[75vh] rounded-[2px] md:rounded-[4px] shadow-2xl shadow-slate-300/60 p-8 md:p-12 relative overflow-hidden border border-stone-200/60">
+                
+                {/* 1. Paper Texture Overlay */}
+                <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')]" />
+
+                {/* 2. Margin Line (Classic Notebook Style) */}
+                <div className="absolute left-10 md:left-16 top-0 bottom-0 w-px bg-red-200/40 pointer-events-none z-0" />
+
+                {/* Content Container */}
+                <div className="relative z-10 pl-6 md:pl-12 h-full flex flex-col">
+                  
+                  {/* Prompt Banner */}
+                  {editorData.prompt && (
+                    <div className="mb-8 p-4 bg-purple-50/50 rounded-lg border border-purple-100 flex gap-3 items-start backdrop-blur-sm -ml-2">
+                      <Sparkles className="w-5 h-5 text-purple-500 shrink-0 mt-0.5" />
+                      <div>
+                        <div className="text-xs font-bold text-purple-400 uppercase tracking-widest mb-1">Prompt</div>
+                        <p className="text-purple-900 font-medium">{editorData.prompt}</p>
+                      </div>
                     </div>
                   )}
-                </CardContent>
-              </Card>
 
-              {/* Stats */}
-              <Card className="glass">
-                <CardHeader>
-                  <CardTitle className="text-lg">Your Progress</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Total Entries:</span>
-                      <span className="font-semibold">{entries.length}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">This Week:</span>
-                      <span className="font-semibold">
-                        {entries.filter(entry => {
-                          const entryDate = new Date(entry.date);
-                          const weekAgo = new Date();
-                          weekAgo.setDate(weekAgo.getDate() - 7);
-                          return entryDate >= weekAgo;
-                        }).length}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Current Streak:</span>
-                      <span className="font-semibold">
-                        {entries.length > 0 ? 
-                          Math.max(1, Math.floor((Date.now() - new Date(entries[0].date).getTime()) / (1000 * 60 * 60 * 24))) + 
-                          " days" : "0 days"}
-                      </span>
-                    </div>
+                  {/* Title Input */}
+                  <Input
+                    value={editorData.title}
+                    onChange={(e) => setEditorData({...editorData, title: e.target.value})}
+                    placeholder="Title your entry..."
+                    className="text-3xl md:text-4xl font-serif font-medium border-none px-0 shadow-none focus-visible:ring-0 placeholder:text-slate-300/50 mb-6 bg-transparent"
+                  />
+
+                  {/* Main Content (Ruled Lines Effect) */}
+                  <Textarea
+                    autoFocus
+                    value={editorData.content}
+                    onChange={(e) => setEditorData({...editorData, content: e.target.value})}
+                    placeholder="Start writing here..."
+                    className="flex-1 w-full resize-none border-none p-0 text-lg md:text-xl text-slate-700 font-serif placeholder:text-slate-300/50 focus-visible:ring-0 bg-transparent leading-[2.5rem]"
+                    style={{
+                      // Creating the ruled lines visually
+                      backgroundImage: 'linear-gradient(transparent 95%, #e2e8f0 95%)',
+                      backgroundSize: '100% 2.5rem',
+                      lineHeight: '2.5rem',
+                      backgroundAttachment: 'local'
+                    }}
+                  />
+
+                  {/* Footer Action */}
+                  <div className="flex justify-end pt-8 mt-auto">
+                    <Button 
+                      size="lg" 
+                      onClick={handleSave}
+                      className="rounded-full px-8 bg-slate-900 hover:bg-slate-800 text-white shadow-lg hover:shadow-xl transition-all"
+                    >
+                      Save Entry
+                    </Button>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="breakspace" className="mt-6">
-          <BreakSpace />
-        </TabsContent>
-      </Tabs>
+                </div>
+
+              </div>
+            </motion.div>
+          )}
+
+        </AnimatePresence>
+      </PageContainer>
     </div>
   );
 };

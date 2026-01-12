@@ -1,106 +1,140 @@
-import { Switch, Route, useLocation } from "wouter";
+import { Switch, Route, Redirect, useLocation } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useEffect } from "react";
 
-import AppWrapper from "@/components/AppWrapper";
-import Home from "@/pages/Home";
-import Onboarding from "@/pages/Onboarding";
-import PrivacyNotice from "@/pages/PrivacyNotice";
-import ProfileSetup from "@/pages/ProfileSetup";
-import MoodCheck from "@/pages/MoodCheck";
-import MoodSuggestion from "@/pages/MoodSuggestion";
+// 🧠 CONTEXT PROVIDERS
+import { UIProvider } from "@/context/UIContext";
+import { MusicProvider } from "@/context/MusicContext";
+import { MoodProvider } from "@/context/MoodContext";
+import { BrainProvider } from "@/context/BrainContext";
+
+// 🐚 SHELL
+import { Shell } from "@/components/layout/Shell";
+
+// --- MAIN PAGES ---
+import Dashboard from "@/pages/Dashboard";
 import Music from "@/pages/Music";
 import AIChat from "@/pages/AIChat";
 import Journal from "@/pages/Journal";
-import Panic from "@/pages/Panic";
+import BreakSpace from "@/pages/BreakSpace";
 import Games from "@/pages/Games";
 import Creativity from "@/pages/Creativity";
 import Inspiration from "@/pages/Inspiration";
 import Relaxation from "@/pages/Relaxation";
 import Settings from "@/pages/Settings";
+import GlimpseEntry from "@/pages/GlimpseEntry"; // ✅ ADD THIS
+
+// --- ONBOARDING FLOW ---
+import Onboarding from "@/pages/Onboarding";
+import PrivacyNotice from "@/pages/PrivacyNotice";
+import ProfileSetup from "@/pages/ProfileSetup";
+import MoodCheck from "@/pages/MoodCheck";
+import MoodSuggestion from "@/pages/MoodSuggestion";
+
+// --- SPECIAL PAGES ---
+import Panic from "@/pages/Panic";
 import NotFound from "@/pages/not-found";
 
 function Router() {
-  const [location, setLocation] = useLocation();
-  
-  useEffect(() => {
-    // Check if user has completed onboarding
-    const hasSeenOnboarding = localStorage.getItem("hasSeenOnboarding");
-    
-    if (!hasSeenOnboarding && location !== "/onboarding" && 
-        !location.startsWith("/privacy") && 
-        !location.startsWith("/profile-setup") &&
-        !location.startsWith("/mood-check") &&
-        !location.startsWith("/suggestion")) {
-      setLocation("/onboarding");
-    }
-  }, [location, setLocation]);
+  // 🟢 Ensures rerender on route change
+  const [location] = useLocation();
+
+  // 🟢 ROUTING GUARD FLAGS
+  const hasOnboarded = localStorage.getItem("calm_onboarding_complete");
+  const hasGlimpsed = localStorage.getItem("calm_glimpse_seen");
 
   return (
     <Switch>
-      {/* Onboarding flow */}
+      {/* 🔥 PANIC MODE */}
+      <Route path="/panic" component={Panic} />
+
+      {/* 🔐 SPECIAL ENTRY */}
+      <Route path="/glimpse" component={GlimpseEntry} />
+      <Route path="/breakspace" component={BreakSpace} />
+
+      {/* 🟦 ONBOARDING FLOW */}
       <Route path="/onboarding" component={Onboarding} />
       <Route path="/privacy" component={PrivacyNotice} />
       <Route path="/profile-setup" component={ProfileSetup} />
       <Route path="/mood-check" component={MoodCheck} />
       <Route path="/suggestion" component={MoodSuggestion} />
-      
-      {/* Main app pages */}
+
+      {/* 🟩 MAIN APP ROUTES */}
+
+      {/* Root Route: Deterministic Entry Flow */}
       <Route path="/">
-        <AppWrapper>
-          <Home />
-        </AppWrapper>
+        {!hasGlimpsed ? (
+          <Redirect to="/glimpse" />
+        ) : !hasOnboarded ? (
+          <Redirect to="/onboarding" />
+        ) : (
+          <Shell>
+            <Dashboard />
+          </Shell>
+        )}
       </Route>
-      <Route path="/music">
-        <AppWrapper>
-          <Music />
-        </AppWrapper>
+
+      <Route path="/dashboard">
+        {localStorage.getItem("calm_onboarding_complete") ? (
+          <Shell>
+            <Dashboard />
+          </Shell>
+        ) : (
+          <Redirect to="/" />
+        )}
       </Route>
-      <Route path="/aichat">
-        <AppWrapper>
-          <AIChat />
-        </AppWrapper>
-      </Route>
+
+
       <Route path="/journal">
-        <AppWrapper>
+        <Shell>
           <Journal />
-        </AppWrapper>
+        </Shell>
       </Route>
-      <Route path="/panic">
-        <AppWrapper>
-          <Panic />
-        </AppWrapper>
-      </Route>
-      <Route path="/games">
-        <AppWrapper>
-          <Games />
-        </AppWrapper>
-      </Route>
+
       <Route path="/creativity">
-        <AppWrapper>
+        <Shell>
           <Creativity />
-        </AppWrapper>
+        </Shell>
       </Route>
+
+      <Route path="/music">
+        <Shell>
+          <Music />
+        </Shell>
+      </Route>
+
+      <Route path="/games">
+        <Shell>
+          <Games />
+        </Shell>
+      </Route>
+
+      <Route path="/aichat">
+        <Shell>
+          <AIChat />
+        </Shell>
+      </Route>
+
       <Route path="/inspiration">
-        <AppWrapper>
+        <Shell>
           <Inspiration />
-        </AppWrapper>
+        </Shell>
       </Route>
+
       <Route path="/relaxation">
-        <AppWrapper>
+        <Shell>
           <Relaxation />
-        </AppWrapper>
+        </Shell>
       </Route>
+
       <Route path="/settings">
-        <AppWrapper>
+        <Shell>
           <Settings />
-        </AppWrapper>
+        </Shell>
       </Route>
-      
-      {/* Fallback */}
+
       <Route component={NotFound} />
     </Switch>
   );
@@ -109,10 +143,19 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <UIProvider>
+        <MoodProvider>
+          <MusicProvider>
+            {/* 🧠 BRAIN MUST WRAP THE ROUTER */}
+            <BrainProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Router />
+              </TooltipProvider>
+            </BrainProvider>
+          </MusicProvider>
+        </MoodProvider>
+      </UIProvider>
     </QueryClientProvider>
   );
 }

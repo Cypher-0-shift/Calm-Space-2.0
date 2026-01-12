@@ -6,7 +6,10 @@ const DevResetButton = () => {
   const handleReset = () => {
     if (confirm("Are you sure you want to reset the app? This will clear all your data.")) {
       // Clear all localStorage data
-      localStorage.removeItem("hasSeenOnboarding");
+      localStorage.removeItem("hasSeenOnboarding"); // Legacy
+      localStorage.removeItem("calm_onboarding_complete");
+      localStorage.removeItem("calm_glimpse_seen");
+      
       localStorage.removeItem("allowPersonalization");
       localStorage.removeItem("userProfile");
       localStorage.removeItem("currentMood");
@@ -18,8 +21,8 @@ const DevResetButton = () => {
       localStorage.removeItem("journalEntries");
       localStorage.removeItem("settings");
       
-      // Navigate to onboarding
-      setLocation("/onboarding");
+      // Navigate to root (router determines next step)
+      setLocation("/");
     }
   };
 

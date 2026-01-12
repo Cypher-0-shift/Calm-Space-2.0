@@ -1,66 +1,93 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { useMoodTheme } from '@/hooks/useMoodTheme';
-import ParticlesBackground from '@/components/ParticlesBackground';
-import MoodSelector from '@/components/MoodSelector';
+import { useMood } from '@/context/MoodContext';
+import { useUI } from '@/hooks/useUI'; // ✅ ADD THIS
+import { BrainDecisionState } from '@/brain/BrainDecisionState'; // ✅ ADD THIS
+import { PremiumBackground } from '@/components/ui/PremiumBackground';
+import { GlassCard } from '@/components/ui/GlassCard';
+import MoodSelector from '@/components/ui/MoodSelector';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 
 const MoodCheck = () => {
-  const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [, setLocation] = useLocation();
-  const { setMood } = useMoodTheme();
+  const { currentMood } = useMood();
+  const { applyBrainDecision } = useUI(); // ✅ UI bridge
 
-  const handleMoodSelect = (mood: string) => {
-    setSelectedMood(mood);
-    setMood(mood as any);
-  };
+  // 🧠 Apply brain decision when mood is selected
+  useEffect(() => {
+    if (!currentMood) return;
 
-  const handleContinue = () => {
-    if (selectedMood) {
-      localStorage.setItem('currentMood', selectedMood);
-    }
-    setLocation('/suggestion');
+    const decision: BrainDecisionState = {
+      uiDecision: {
+        mood: currentMood,
+        intensity: 'normal',
+      },
+    };
+
+    applyBrainDecision(decision);
+  }, [currentMood, applyBrainDecision]);
+
+  const handleMoodLogged = () => {
+    setTimeout(() => {
+      setLocation('/suggestion');
+    }, 800);
   };
 
   const handleSkip = () => {
-    setLocation('/');
+    // Optional: apply a neutral decision
+    const decision: BrainDecisionState = {
+      uiDecision: {
+        mood: 'neutral',
+        intensity: 'low',
+      },
+    };
+
+    applyBrainDecision(decision);
+    setLocation('/dashboard');
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
-      <ParticlesBackground />
-      
-      <div className="glass rounded-3xl p-8 md:p-12 max-w-4xl mx-4 animate-slide-up">
-        <div className="text-center mb-8">
-          <div className="text-6xl mb-4">🎭</div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-            How Are You Feeling?
+    <div className="min-h-screen w-full relative flex items-center justify-center p-4 overflow-hidden">
+      <PremiumBackground />
+
+      <GlassCard
+        className="max-w-4xl w-full p-8 md:p-12 border-white/40 dark:border-white/10"
+        delay={0.2}
+      >
+        <div className="text-center mb-10 space-y-4">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', duration: 0.8 }}
+            className="text-7xl mb-6 inline-block"
+          >
+            🎭
+          </motion.div>
+
+          <h1 className="text-4xl md:text-5xl font-light text-slate-800 dark:text-slate-100 tracking-tight">
+            How are you feeling?
           </h1>
-          <p className="text-lg text-gray-600">
-            Select your current mood to get personalized recommendations
+
+          <p className="text-lg text-slate-600 dark:text-slate-300 font-light max-w-xl mx-auto leading-relaxed">
+            Select your current mood to unlock a personalized sanctuary experience tailored just for you.
           </p>
         </div>
 
-        <MoodSelector onMoodSelect={handleMoodSelect} />
+        <div className="mb-12">
+          <MoodSelector onLog={handleMoodLogged} />
+        </div>
 
-        <div className="flex gap-4 justify-center">
+        <div className="flex justify-center">
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={handleSkip}
-            className="px-6 py-3"
+            className="text-slate-500 hover:text-slate-700 hover:bg-black/5 dark:hover:bg-white/10 rounded-full px-8"
           >
             Skip for Now
           </Button>
-          
-          <Button
-            onClick={handleContinue}
-            disabled={!selectedMood}
-            className="px-8 py-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-50"
-          >
-            Get Recommendations
-          </Button>
         </div>
-      </div>
+      </GlassCard>
     </div>
   );
 };

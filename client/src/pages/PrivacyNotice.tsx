@@ -1,104 +1,136 @@
-import { useState } from 'react';
+// client/src/pages/PrivacyNotice.tsx
+
+import React from 'react';
 import { useLocation } from 'wouter';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import ParticlesBackground from '@/components/ParticlesBackground';
+import { Shield, EyeOff, Lock, RefreshCcw } from 'lucide-react';
 
-const PrivacyNotice = () => {
-  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
-  const [allowPersonalization, setAllowPersonalization] = useState(true);
-  const [, setLocation] = useLocation();
+const PrivacyNotice: React.FC = () => {
+    const [, setLocation] = useLocation();
 
-  const handleContinue = () => {
-    if (!acceptPrivacy) return;
+    // Pure navigation, no storage or API side effects
+    const handleContinue = () => {
+        setLocation('/profile-setup');
+    };
 
-    localStorage.setItem('allowPersonalization', allowPersonalization.toString());
-    setLocation('/profile-setup');
-  };
+    const handleReadLater = () => {
+        setLocation('/');
+    };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
-      <ParticlesBackground />
-      
-      <div className="glass rounded-3xl p-8 md:p-12 max-w-3xl mx-4 animate-slide-up">
-        <div className="text-center mb-8">
-          <div className="text-6xl mb-4">🔒</div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-            Privacy & Data Notice
-          </h1>
-          <p className="text-lg text-gray-600">
-            Your privacy is our top priority
-          </p>
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: { 
+            opacity: 1,
+            transition: { staggerChildren: 0.1, delayChildren: 0.2 }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 10 },
+        visible: { 
+            opacity: 1, 
+            y: 0,
+            transition: { duration: 0.6, ease: "easeOut" }
+        }
+    };
+
+    return (
+        <div className="min-h-screen w-full bg-[#FAFAFA] flex items-center justify-center p-6">
+            <motion.div 
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="max-w-2xl w-full space-y-12"
+            >
+                {/* Header */}
+                <motion.div variants={itemVariants} className="text-center space-y-4">
+                    <div className="flex justify-center">
+                        <div className="p-3 bg-slate-100 rounded-full">
+                            <Shield className="w-6 h-6 text-slate-400" strokeWidth={1.5} />
+                        </div>
+                    </div>
+                    <h1 className="text-3xl font-light text-slate-900 tracking-tight">
+                        Your space stays yours.
+                    </h1>
+                </motion.div>
+
+                {/* Core Pillars */}
+                <div className="grid md:grid-cols-2 gap-8">
+                    
+                    {/* Pillar 1 */}
+                    <motion.div variants={itemVariants} className="space-y-3">
+                        <div className="flex items-center gap-3 text-slate-900">
+                            <EyeOff className="w-5 h-5 opacity-50" strokeWidth={1.5} />
+                            <h3 className="font-medium">What we don’t do</h3>
+                        </div>
+                        <ul className="text-slate-500 font-light text-sm space-y-2 leading-relaxed pl-8 border-l border-slate-100">
+                            <li>We don’t track your movements.</li>
+                            <li>We don’t sell your history.</li>
+                            <li>We don’t watch over your shoulder.</li>
+                        </ul>
+                    </motion.div>
+
+                    {/* Pillar 2 */}
+                    <motion.div variants={itemVariants} className="space-y-3">
+                        <div className="flex items-center gap-3 text-slate-900">
+                            <Lock className="w-5 h-5 opacity-50" strokeWidth={1.5} />
+                            <h3 className="font-medium">What happens here</h3>
+                        </div>
+                        <ul className="text-slate-500 font-light text-sm space-y-2 leading-relaxed pl-8 border-l border-slate-100">
+                            <li>You can exist here without creating anything.</li>
+                            <li>Nothing is saved unless you ask.</li>
+                            <li>You can leave quietly anytime.</li>
+                        </ul>
+                    </motion.div>
+
+                    {/* Pillar 3 */}
+                    <motion.div variants={itemVariants} className="space-y-3">
+                        <div className="flex items-center gap-3 text-slate-900">
+                            <div className="w-5 h-5 rounded-full border border-slate-300 opacity-50" />
+                            <h3 className="font-medium">When things change</h3>
+                        </div>
+                        <ul className="text-slate-500 font-light text-sm space-y-2 leading-relaxed pl-8 border-l border-slate-100">
+                            <li>This space adapts only if you allow it.</li>
+                            <li>It listens to understand, not to report.</li>
+                            <li>You will always be asked first.</li>
+                        </ul>
+                    </motion.div>
+
+                    {/* Pillar 4 */}
+                    <motion.div variants={itemVariants} className="space-y-3">
+                        <div className="flex items-center gap-3 text-slate-900">
+                            <RefreshCcw className="w-5 h-5 opacity-50" strokeWidth={1.5} />
+                            <h3 className="font-medium">Your control</h3>
+                        </div>
+                        <ul className="text-slate-500 font-light text-sm space-y-2 leading-relaxed pl-8 border-l border-slate-100">
+                            <li>Reset this entire space anytime.</li>
+                            <li>Delete memories instantly.</li>
+                            <li>Change your mind whenever you need.</li>
+                        </ul>
+                    </motion.div>
+                </div>
+
+                {/* Actions */}
+                <motion.div variants={itemVariants} className="flex flex-col items-center gap-6 pt-8">
+                    <Button 
+                        size="lg"
+                        className="rounded-full px-12 h-14 text-lg font-normal bg-slate-900 text-white hover:bg-slate-800 shadow-xl hover:shadow-2xl transition-all hover:scale-[1.02]"
+                        onClick={handleContinue}
+                    >
+                        Continue
+                    </Button>
+
+                    <button 
+                        onClick={handleReadLater}
+                        className="text-sm text-slate-400 hover:text-slate-600 transition-colors font-light"
+                    >
+                        I’ll read later
+                    </button>
+                </motion.div>
+            </motion.div>
         </div>
-
-        <div className="space-y-6 text-gray-700">
-          <div className="bg-white/50 rounded-xl p-6">
-            <h3 className="text-lg font-semibold mb-3 text-green-700">✓ What we do:</h3>
-            <ul className="space-y-2 text-sm">
-              <li>• Store all your data locally on your device</li>
-              <li>• Use end-to-end encryption for AI conversations</li>
-              <li>• Allow you to export or delete your data anytime</li>
-              <li>• Provide complete transparency about data usage</li>
-            </ul>
-          </div>
-
-          <div className="bg-white/50 rounded-xl p-6">
-            <h3 className="text-lg font-semibold mb-3 text-red-700">✗ What we don't do:</h3>
-            <ul className="space-y-2 text-sm">
-              <li>• Sell your personal data to third parties</li>
-              <li>• Track your location or personal activities</li>
-              <li>• Store sensitive information on our servers</li>
-              <li>• Share your mood or journal data with anyone</li>
-            </ul>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-start space-x-3">
-              <Checkbox
-                id="privacy-accept"
-                checked={acceptPrivacy}
-                onCheckedChange={(checked) => setAcceptPrivacy(!!checked)}
-              />
-              <label htmlFor="privacy-accept" className="text-sm leading-relaxed">
-                I understand and accept that my data will be stored locally on my device, 
-                and I consent to the privacy practices outlined above.
-              </label>
-            </div>
-
-            <div className="flex items-start space-x-3">
-              <Checkbox
-                id="personalization"
-                checked={allowPersonalization}
-                onCheckedChange={(checked) => setAllowPersonalization(!!checked)}
-              />
-              <label htmlFor="personalization" className="text-sm leading-relaxed">
-                Allow personalization features (mood-based themes, recommendations, etc.)
-                This can be changed later in settings.
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex gap-4 justify-center mt-8">
-          <Button
-            variant="outline"
-            onClick={() => setLocation('/onboarding')}
-            className="px-6 py-3"
-          >
-            Back
-          </Button>
-          
-          <Button
-            onClick={handleContinue}
-            disabled={!acceptPrivacy}
-            className="px-8 py-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-50"
-          >
-            Continue
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default PrivacyNotice;
