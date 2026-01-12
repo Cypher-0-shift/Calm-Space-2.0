@@ -167,4 +167,10 @@ This is a mental wellness app designed to help people. Feel free to:
 
 ## License
 
-This project is open source and available under the MIT License.
+This project is proprietary and **not open source**.
+
+All rights are reserved by the author.  
+Use, copying, modification, or distribution of this code is **not permitted**
+without explicit written permission.
+
+See the `LICENSE` file for full details.
